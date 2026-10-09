@@ -1,5 +1,5 @@
 ---
-name: react-email-package
+name: react-email-package2
 description: >
   Scaffold a self-contained React Email package in a monorepo by converting the create-email
   starter into a buildable, importable workspace package. Use when creating a new email or
