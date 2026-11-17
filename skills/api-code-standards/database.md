@@ -56,15 +56,7 @@ Driver failures arrive as a typed `DatabaseError`, so database code has no `try/
 - `"query"`: a statement failed.
 - `"transaction"`: the transaction itself failed (begin or commit).
 
-The error type flows up through every `Effect.gen` that yields the work. Handle it only at the point where a decision is made, such as mapping it to an HTTP response or logging it at the boundary:
-
-```ts
-program.pipe(
-  Effect.catchTag("DatabaseError", (error) =>
-    Effect.logError(`Database ${error.operation} failed`, error.cause)
-  )
-);
-```
+The error type flows up through repos and queries unchanged, so a service can react to a specific failure (a unique violation it turns into a domain error). At the end of each service method it becomes a defect with `Effect.catchTag("DatabaseError", Effect.die)`, so hosts see domain errors only (see `errors.md`).
 
 ## Layers
 
