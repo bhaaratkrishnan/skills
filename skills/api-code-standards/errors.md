@@ -42,7 +42,7 @@ Errors split by who can act on them:
 
 ## At the host
 
-One generic handler maps every domain error; adding an error needs no change at the host:
+One generic handler maps every domain error; adding an error needs no change at the host — **on one condition**: the host declares no error names of its own. Where a framework requires per-route error documentation (OpenAPI), it is derived from the method's inferred error union, never written by hand — a route may document a tag the union contains, and nothing else.
 
 ```ts
 const toErrorResponse = (error: DomainError) => ({

@@ -1,6 +1,6 @@
 ---
 name: api-code-standards
-description: Code standards for self-contained TypeScript API packages built on Effect and Drizzle. Use when writing, reviewing or refactoring API code, adding a use case or service, deciding where a database read or write belongs (repo or query), defining errors or input schemas, or running statements and transactions.
+description: Code standards for self-contained TypeScript API packages built on Effect and Drizzle. Use when writing, reviewing or refactoring API code, adding a use case or service, deciding where a database read or write belongs (repo or query), deciding where a screen-shaped read per audience belongs (BFF), defining errors or input schemas, or running statements and transactions.
 ---
 
 # API code standards
@@ -13,6 +13,7 @@ When reviewing, cite violations by topic and rule number (`services #7`) so the 
 |---|---|
 | [`package.md`](package.md) | The package boundary, its exports, layer composition, config, external adapters, hosts or tests |
 | [`services.md`](services.md) | A use case: orchestration, transactions, authorization, side effects |
+| [`bff.md`](bff.md) | A screen-shaped read per audience (BFF): composition, audience scoping, or a multi-step write that seems to belong to a screen |
 | [`errors.md`](errors.md) | Domain errors, error codes, `DatabaseError` handling, or mapping errors at a host |
 | [`schemas.md`](schemas.md) | Use case inputs and outputs, or the request context (`CurrentActor`) |
 | [`data-access.md`](data-access.md) | Database reads or writes: repos, queries, method naming, pagination, or where a new one belongs |

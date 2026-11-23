@@ -37,6 +37,8 @@ Done when the function sits in the file this procedure names.
    >[number];
    ```
 
+   The derivation above is the default, not a mandate — when it fights back (a deep Effect type change, a result the statement maps), a hand-written named type is allowed. The rule it serves is the one that holds: a result type is derived from the method's actual output, never restated field-by-field from the schema.
+
 4. Write the selection inline in the statement. Extract it to a named `const` only when two or more queries share it; it then lives in the query file of the entity its columns describe, and the other files import it.
 
 ```ts
@@ -80,21 +82,24 @@ findUsersWithMembershipByOrganizationId: (
    }
    ```
 
+3. Timestamps (`createdAt`, `updatedAt`) are set inside the statement, never passed in by the caller — except in a use case whose purpose is to carry history (an import, a backfill, a migration), which passes them explicitly and says so in the method name (`importUsersWithHistory`). If a table can be deactivated (a soft delete), its reads exclude inactive rows by default, and a method that includes them says so in its name (`findUsersIncludingDeactivated`).
+
 ## Method naming
 
-Methods are named `<verb><Result>By<Filter>`, and the verb states the empty case:
-
-- `find*` may come back empty: `null` for one, `[]` for many.
-- `get*` fails with a typed not-found error when nothing matches.
+Methods are named `find<Result>By<Filter>`. A missing match is data, not a failure: one result returns `null`, many return `[]`. What a missing record *means* — an `OrganizationNotFound`, a create-it, an ignore — is the use case's judgment (see `services.md` #6), never the data layer's.
 
 `By<Filter>` names only the **required** keys. Optional filters and pagination go in the params object, so one method serves every combination:
 
 - `findUsersByOrganizationId({ organizationId, role?, status? })`, one method in place of `findUsersByOrgAndRole`, `findUsersByOrgAndRoleAndStatus`, …
 - `findOrganizations({ search?, status?, page?, limit? })` when nothing is required.
 
+Writes follow the same discipline: `create<X>` inserts one row and hands it back via `.returning()`; `update<X>By<Filter>` and `delete<X>By<Filter>` name their required keys exactly as `find` does, with optional filters in the params object on the same terms. The payload arrives as `{ data }` — one parameter object, with the scope and filters beside it and `tx` last.
+
 ## Pagination
 
-A paged list is two methods: the list (`LIMIT`/`OFFSET` in the statement) and its count, in `<entity>.stats.query.ts`. Both take the same filter params and build their `WHERE` from one exported filter builder, kept beside the list method, so the page and the total always match. The service runs both and returns `{ items, total }`.
+A paged list is two methods: the list (`LIMIT`/`OFFSET` in the statement) and its count, in `<entity>.stats.query.ts`. Both take the same filter params and build their `WHERE` from one exported filter builder, kept beside the list method, so the page and the total always match. The service runs both and returns `{ items, total }`. This pair is the default, not the only shape: a single statement carrying both (a `COUNT(*) OVER ()` window) is allowed, and a list with no total is allowed when the screen shows none — whichever shape is used, where a page and a total both exist they match by construction.
+
+A paged list declares a **total order** — a sort column plus a unique tiebreaker — so its order is deterministic. That does not make its pages stable: under concurrent writes, offset pages shift, and a row can repeat or vanish between pages. Where page stability under concurrent writes matters, use **keyset pagination** — the cursor is the last row's sort values (`WHERE (createdAt, id) > (…)`), anchored to the data rather than the position. Its `limit` has a default and a maximum; a request above the maximum is a decode failure, not a query.
 
 ## Many ids
 
